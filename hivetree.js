@@ -1,6 +1,6 @@
 var back_list = [null];
 
-var margin = {top: 20, right: 120, bottom: 20, left: 120},
+var margin = {top: 70, right: 120, bottom: 70, left: 120},
   width = 1960 - margin.right - margin.left,
   height = 1800 - margin.top - margin.bottom;
 var max_depth, max_rows;
@@ -26,7 +26,7 @@ $(document).ready(()=>{
         nodes.forEach(function(d) { 
             d.y = d.depth * bubble_option.margin+100; 
             if(d.seid==root.seid){
-                d.x = 100;
+                d.x = 45;
             }
         });
         
