@@ -1,0 +1,258 @@
+body {
+  background: #292929;
+  background-repeat: no-repeat;
+  color: white;
+}
+/* bgimages go in the "custom" directory*/
+
+/* unvisited link */
+a:link {
+  color: #00ffff;
+}
+
+/* visited link */
+a:visited {
+  color: #00ffff;
+}
+
+/* mouse over link */
+a:hover {
+  color: hotpink;
+}
+
+/* selected link */
+a:active {
+  color: blue;
+}
+
+p {
+  margin: 0px auto;
+  max-width: 600px;
+}
+
+.p1 {
+  line-height: 150%;
+}
+
+p.small {
+  font-size: 0.875em;
+}
+
+p.round2 {
+  border: 1px solid white;
+  border-radius: 20px;
+  width: 200px;
+  height: 50px;
+  padding: 4px;
+  overflow: hidden;
+  font-family: arial;
+  font-size: 0.75em;
+  color: pink;
+}
+
+.button {
+  padding: 5px;
+  background-color: #dcdcdc;
+  border: 1px solid #666;
+  color: #000;
+  text-decoration: none;
+  background: #dcdcdc url(iconup.png) no-repeat scroll 5px center;
+}
+
+.tiny {
+  font-family: arial;
+  font-size: 0.65em;
+}
+
+.small {
+  font-family: arial;
+  font-size: 0.75em;
+}
+
+.smallv {
+  font-family: arial;
+  font-size: 0.75em;
+  text-align: center;
+  color: pink;
+}
+
+div.tiny {
+  font-family: arial;
+  font-size: 0.65em;
+}
+
+div.small {
+  font-family: arial;
+  font-size: 0.75em;
+}
+
+div.smallv {
+  font-family: arial;
+  font-size: 0.75em;
+  text-align: center;
+  color: #66ffb2;
+}
+
+.blue {
+  font-family: arial;
+  font-size: 0.75em;
+  text-align: center;
+  color: blue;
+}
+
+div.little {
+  font-family: arial;
+  font-size: 0.875em;
+}
+
+ul {
+  list-style: none;
+  max-height: 350px;
+  margin: 0;
+  overflow: auto;
+  padding: 0;
+  text-indent: 10px;
+  color: #0099ff;
+}
+li {
+  line-height: 25px;
+}
+
+table.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+table.top {
+  vertical-align: top;
+}
+
+.red {
+  color: red;
+}
+
+div.scrollit {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  height: 300px;
+  width: 380px;
+}
+
+div.scrollitbv {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  height: 400px;
+  width: 380px;
+}
+
+div.scrollitgen {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  height: 400px;
+  width: 1000px;
+}
+
+div.scrollitvids {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  height: 250px;
+  width: 390px;
+}
+
+div.scrollitchat {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  height: 250px;
+  width: 250px;
+}
+
+div.userscrollit {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  height: 400px;
+  width: 280px;
+}
+
+div.userscrollitbv {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  height: 250px;
+  width: 280px;
+}
+
+#flip {
+  padding: 2px;
+  text-align: center;
+  background-color: #000000;
+  border: solid 1px #c3c3c3;
+  color: white;
+}
+
+#panel {
+  padding: 50px;
+  text-align: center;
+  background-color: #888888;
+  border: solid 1px #c3c3c3;
+  display: none;
+}
+
+.centered-table {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.table1 {
+  border-collapse: separate;
+}
+
+.td1 {
+  border: solid black 1px;
+  border-radius: 20px;
+  -moz-border-radius: 20px;
+  padding: 20px;
+  background: blue;
+}
+
+.debug {
+  border: 1px solid orange;
+}
+
+
+/**normal css**/
+.controlDiv{
+  position : fixed;
+  top : 25px;
+  left : 60px;
+}
+.blue-btn{
+  cursor : pointer;
+  color : #00ffff;
+  background : transparent;
+  padding : 5px 20px;
+  border-radius : 5px;
+  border : 1px solid;
+}
+.blue-btn:active{
+  color : white;
+  border : 2px solid white;
+}
+/***d3 svg tree css****/
+.node {
+    cursor: pointer;
+  }
+  
+.node rect {
+  /* fill: #fff; */
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+.node text {
+  font: 0.75em sans-serif;
+  fill : #00ffff;
+}
+.link {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
