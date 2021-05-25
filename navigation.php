@@ -13,4 +13,6 @@
 </div>
 <div class="controlDiv">
 	<button id="backBtn" class="btn blue-btn" onclick="clickBackBtn()">Back</button>
+	<button id="ExpandAllBtn" class="btn blue-btn">Expand All</button>
+	<button id="CollapseAllBtn" class="btn blue-btn">Collapse All</button>
 </div>

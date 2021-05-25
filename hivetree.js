@@ -33,6 +33,13 @@ $(document).ready(()=>{
         // Update the nodes…
         var node = svg.selectAll("g.node")
             .data(nodes, function(d) { return d.id || (d.id = ++i); });
+        svg.selectAll("text.toggleBtn").text(function(d){
+            if(d.children)
+                return '-';
+            else if(d._children)
+                return '+';
+            return '';
+        });
 
         // Enter any new nodes at the parent's previous position.
         var nodeEnter = node.enter().append("g")
@@ -45,7 +52,16 @@ $(document).ready(()=>{
             .attr("x", bubble_option.offset_x).attr("y", bubble_option.offset_y)
             .attr("width", 0).attr("height", bubble_option.height)
             .style("fill", function(d) { return d._children ? "transparent" : "transparent"; });
-
+        nodeEnter.append('text')
+                 .attr('class', 'toggleBtn')
+                 .attr('x', 108).attr('y', 62)
+                 .text(function(d){
+                     if(d.children)
+                        return '-';
+                     if(d._children)
+                        return '+';
+                     return '';
+                 }).style('fill-opacity', 1e-6).on('click', clickToggleButton)
         nodeEnter.append("text")
             .attr("x", function(d) { return 0; })
             .attr("dy", "-0.35em")
@@ -86,19 +102,19 @@ $(document).ready(()=>{
             .attr("width", bubble_option.width).attr("height", bubble_option.height)
             .style("fill", function(d) { return d._children ? "transparent" : "transparent"; });
 
-        nodeUpdate.select("text")
+        nodeUpdate.selectAll("text")
             .style("fill-opacity", 1);
 
         // Transition exiting nodes to the parent's new position.
         var nodeExit = node.exit().transition()
-            .duration(duration)
-            .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
+            .duration(0)
+            .attr("transform", function(d) { return "translate(" + (source.y+130) + "," + source.x + ")"; })
             .remove();
 
         nodeExit.select("rect")
             .attr("width", 0);
 
-        nodeExit.select("text")
+        nodeExit.selectAll("text")
             .style("fill-opacity", 1e-6);
 
         // Update the links…
@@ -109,7 +125,7 @@ $(document).ready(()=>{
         link.enter().insert("path", "g")
             .attr("class", "link")
             .attr("d", function(d) {
-                var o = {x: source.x0, y: source.y0};                
+                var o = {x: source.x0, y: source.y0+130};                
                 return diagonal({source: o, target: o});
             });
 
@@ -126,9 +142,9 @@ $(document).ready(()=>{
 
         // Transition exiting nodes to the parent's new position.
         link.exit().transition()
-            .duration(duration-50)
+            .duration(0)
             .attr("d", function(d) {
-                var o = {x: source.x, y: source.y};
+                var o = {x: source.x, y: source.y+130};
                 return diagonal({source: o, target: o});
             })
             .remove();
@@ -139,15 +155,6 @@ $(document).ready(()=>{
             d.y0 = d.y;
         });
     }
-
-    function clickNode(d){
-        getTreeData(d.seid);
-        d.seid!=-1 && back_list.push(root.seid);
-    }
-    d3.select("#backBtn").on('click',function(){
-        if(!back_list.length) return;
-        getTreeData(back_list.pop());
-    })
     function getTreeData(seid){
         $.ajax({
             url : "./hivetree.php"+(seid?"?seid="+seid:''),
@@ -173,28 +180,54 @@ $(document).ready(()=>{
                 root.x0 = 100;
                 root.y0 = 0;
     
-                function collapse(d) {
-                    if (d.children) {
-                    d._children = d.children;
-                    d._children.forEach(collapse);
-                    d.children = null;
-                    }
-                }
-    
     //            root.children.forEach(collapse);
                 update(root);
             }
         });
     }
+    function clickNode(d){
+        getTreeData(d.seid);
+        d.seid!=-1 && back_list.push(root.seid);
+    }
+    d3.select("#backBtn").on('click',function(){
+        if(!back_list.length) return;
+        getTreeData(back_list.pop());
+    })
+    d3.select("#ExpandAllBtn").on('click', function(){
+        expand(root);
+        update(root);
+    })
+    d3.select("#CollapseAllBtn").on('click', function(){
+        if(root.children){
+            root._children = root.children;
+            root.children = null;
+        }
+        update(root);
+    })
+    function expand(d){
+        if(d._children){
+            d.children = d._children;
+            d._children = null;
+        }
+        if(d.children)
+            d.children.forEach(expand);
+    }
+    function collapse(d) {
+        if (d.children) {
+            d._children = d.children;
+            d._children.forEach(collapse);
+            d.children = null;
+        }
+    }
     // Toggle children on click.
-    // function click(d) {
-    //     if (d.children) {
-    //         d._children = d.children;
-    //         d.children = null;
-    //     } else {
-    //         d.children = d._children;
-    //         d._children = null;
-    //     }
-    //     update(d);
-    // }
+    function clickToggleButton(d) {
+        if (d.children) {
+            collapse(d);
+        } else {
+            d.children = d._children;
+            d._children = null;
+        }
+        update(d);
+        d3.event.stopPropagation();
+    }
 })

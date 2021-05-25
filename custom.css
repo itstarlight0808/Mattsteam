@@ -221,14 +221,15 @@ div.userscrollitbv {
 /**normal css**/
 .controlDiv{
   position : fixed;
-  top : 25px;
-  left : 60px;
+  top : 55px;
+  left : 20px;
 }
 .blue-btn{
   cursor : pointer;
   color : #00ffff;
   background : transparent;
   padding : 5px 20px;
+  margin-right : 5px;
   border-radius : 5px;
   border : 1px solid;
 }
@@ -246,7 +247,10 @@ div.userscrollitbv {
   stroke: steelblue;
   stroke-width: 1.5px;
 }
-
+.node .toggleBtn{
+  font-size: 1.7em;
+  padding : 5px;
+}
 .node text {
   font: 0.75em sans-serif;
   fill : #00ffff;
