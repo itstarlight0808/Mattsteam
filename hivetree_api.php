@@ -33,7 +33,6 @@ $session= mysqli_query($connection, $query);
 $timestamp=$_SERVER['REQUEST_TIME'];
 $root = null;
 $max_depth = 1;
-$max_rows = 1;
 
 if ($session->num_rows > 0) 
 // if this session exists then get session details
@@ -59,14 +58,13 @@ if ($session->num_rows > 0)
 
 	// making response..
 	$root['children']=$children;
-	// $max_rows = max($max_rows);
-	echo json_encode(["data"=>$root, "max_depth"=>$max_depth, "max_rows"=>$max_rows]);
+	echo json_encode(["data"=>$root, "max_depth"=>$max_depth]);
 }
 else
 	echo 'Thats not a valid node in this hive.';
 
 function sub_topics($seid , $depth){
-	global $connection , $root , $max_rows, $max_depth;
+	global $connection , $root , $max_depth;
 	// select all topics focused on $hseid (parent topic)
 	$query = "select * from Topics WHERE seid=$seid ORDER BY upvotes DESC, topid DESC";
 	$topics= mysqli_query($connection, $query);
@@ -77,7 +75,7 @@ function sub_topics($seid , $depth){
 	{
 		while($row = $topics->fetch_assoc()) 
 		{
-			if($row['seidperm']==1)	 // in logical error case...
+			if($row['seidperm']==$root['seid'])	 // in logical error case...
 				continue;
 			$stitle = htmlspecialchars($row['topic']);
 			$subseid = $row["seidperm"];
@@ -87,14 +85,12 @@ function sub_topics($seid , $depth){
 			$child['name'] = "$stitle($subseid)(".$row['children'].")";
 			if($row["children"]>0)
 				$child['children']=sub_topics($subseid, $depth+1);
-			else
-				$max_rows++;
 			array_push($children, $child);
 		}
 		/******Get Max Depth & Max Children******/
 		$max_depth = $max_depth>$depth?$max_depth:$depth;
 	}
 	else
-		return [["seid"=>-1, "name"=>'no topics in this node.. All Topics?']];
+		return [["seid"=>-1, "name"=>'no topics in this node!!']];
 	return $children;
 }
