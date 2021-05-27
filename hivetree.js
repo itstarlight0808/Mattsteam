@@ -1,9 +1,7 @@
-var back_list = [null];
+var back_list = [];
 
-var margin = {top: 70, right: 120, bottom: 70, left: 120},
-  width = 1960 - margin.right - margin.left,
-  height = 1800 - margin.top - margin.bottom;
-var max_depth, max_rows;
+var margin = {top: 80, right: 120, bottom: 80, left: 120},  width, heigh;
+var max_depth;
 var bubble_option = {
     width : 250,
     height : 90,
@@ -11,12 +9,13 @@ var bubble_option = {
     offset_y : -20,
     margin : 400
 }
-var i = 0, duration = 550,  root;
-var svg, tree;
+var i = 0, duration = 550;
+var svg, tree, root;
+var max_node, node_x;
 var diagonal = d3.svg.diagonal()
                      .projection(function(d) { return [d.y, d.x]; });
 $(document).ready(()=>{
-    getTreeData();
+    getTreeData(seid);
 
     function update(source) {
         // Compute the new tree layout.
@@ -29,7 +28,9 @@ $(document).ready(()=>{
                 d.x = 45;
             }
         });
-        
+        max_node = {x : 0, depth : 0};
+        node_x = [];
+        reArrangeNodePosition(root);
         // Update the nodes…
         var node = svg.selectAll("g.node")
             .data(nodes, function(d) { return d.id || (d.id = ++i); });
@@ -157,18 +158,17 @@ $(document).ready(()=>{
     }
     function getTreeData(seid){
         $.ajax({
-            url : "./hivetree.php"+(seid?"?seid="+seid:''),
+            url : "./hivetree_api.php"+(seid?"?seid="+seid:''),
             type : 'post',
             success : function(res, state) {
                 if (!state) throw state;
                 res = JSON.parse(res);
                 // adjusting the size of svg element...
                 max_depth = res.max_depth;
-                max_rows = res.max_rows;
 
                 d3.select("#container").html("");
                 tree = d3.layout.tree()
-                            .size([height=max_rows*90, width=max_depth*550]);
+                            .size([height="900", width=max_depth*550]);
                 svg = d3.select("#container").append("svg")
                             .attr("width", width + margin.right + margin.left)
                             .attr("height", height + margin.top + margin.bottom)
@@ -182,12 +182,15 @@ $(document).ready(()=>{
     
     //            root.children.forEach(collapse);
                 update(root);
+                resizeD3Tree();
             }
         });
     }
     function clickNode(d){
+        if(d.seid==-1)
+            return;
         getTreeData(d.seid);
-        d.seid!=-1 && back_list.push(root.seid);
+        back_list.push(root.seid);
     }
     d3.select("#backBtn").on('click',function(){
         if(!back_list.length) return;
@@ -196,6 +199,7 @@ $(document).ready(()=>{
     d3.select("#ExpandAllBtn").on('click', function(){
         expand(root);
         update(root);
+        resizeD3Tree();
     })
     d3.select("#CollapseAllBtn").on('click', function(){
         if(root.children){
@@ -203,6 +207,7 @@ $(document).ready(()=>{
             root.children = null;
         }
         update(root);
+        resizeD3Tree();
     })
     function expand(d){
         if(d._children){
@@ -228,6 +233,65 @@ $(document).ready(()=>{
             d._children = null;
         }
         update(d);
+        resizeD3Tree();
         d3.event.stopPropagation();
+    }
+    function resizeD3Tree(){
+        max_depth = 1;
+        getMaxRows(root);
+        tree.size([height=max_node.x+200, width=max_depth*550]);
+        d3.select("#container svg")
+            .attr('width',width + margin.right + margin.left)
+            .attr('height', height + margin.top + margin.bottom);
+    }
+    function getMaxRows(d){
+        if(d.children)
+            d.children.forEach(getMaxRows);
+        max_depth = max_depth>d.depth?max_depth:d.depth;
+    }
+    function reArrangeNodePosition(d){
+        if(d.children){
+            d.children.forEach(reArrangeNodePosition);
+            d.x = d.children[0].x;
+        }
+        else{
+            
+            if(d.depth<=max_node.depth && node_x[d.depth]){
+                var lastnode = node_x[d.depth].lastnode;
+                var f = 0;
+                if(lastnode.children){
+                    var cur_children = [...d.parent.children];
+                    if(lastnode.parent.seid == d.parent.seid){
+                        var index = d.parent.children.indexOf(lastnode);
+                        cur_children = cur_children.slice(index+1);
+                    }
+                    for(var i=0;i<cur_children.length;i++){
+                        var sibling = cur_children[i];
+                        if(sibling.children || lastnode.children.length-1==i){
+                            f=1;
+                            break;
+                        }
+                    }
+                }
+                if(f)
+                    d.x = lastnode.x + (lastnode.children.length - i)*(bubble_option.height+10);
+                else
+                    d.x = lastnode.x + (bubble_option.height+10)
+                for(var i=d.depth-1;i>=1;i--){
+                    if(!node_x[i])
+                        continue;
+                    if(node_x[i].lastnode.x>=d.x)
+                        d.x = node_x[i].lastnode.x+(bubble_option.height+10);
+                }
+            }
+            else{
+                 max_node = { 'x' : max_node.x+bubble_option.height+10, depth : d.depth};
+                 d.x = max_node.x;
+            }
+        }
+        // console.log("current_node", d, "\nlast_node", node_x[d.depth], "\nmax_node", max_node);
+        max_node = max_node.x<d.x || (max_node.x==d.x && max_node.depth>d.depth)?{'x' : d.x, depth : d.depth}:max_node;
+        node_x[d.depth] = {'lastnode' : d};
+        // console.log("last node", node_x[d.depth]);
     }
 })
