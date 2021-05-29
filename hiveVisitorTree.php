@@ -10,7 +10,7 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js" 
             integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
             crossorigin="anonymous"></script>
-	<script src="./hivetree.js" type="text/javascript"></script>
+	<script src="./hiveVisitorTree.js" type="text/javascript"></script>
 	<link rel="stylesheet" href="./custom.css">
 	<script>
 		var seid = <?=$seid?>;
@@ -23,7 +23,6 @@
 			<button id="backBtn" class="btn blue-btn">Back</button>
 			<button id="ExpandAllBtn" class="btn blue-btn">Expand All</button>
 			<button id="CollapseAllBtn" class="btn blue-btn">Collapse All</button>
-			<a id="switchBtn" class="btn blue-btn" href="./hiveVisitorTree.php?seid=<?=$seid?>">Switch VisitorTree</a>
 		</div>
  	</div>
 	<div id="container">

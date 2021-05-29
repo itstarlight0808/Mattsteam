@@ -3,11 +3,11 @@ var back_list = [];
 var margin = {top: 80, right: 120, bottom: 80, left: 120},  width, heigh;
 var max_depth;
 var bubble_option = {
-    width : 250,
-    height : 90,
+    width : 170,
+    height : 55,
     offset_x : -120,
     offset_y : -20,
-    margin : 400
+    margin : 240
 }
 var i = 0, duration = 550;
 var svg, tree, root;
@@ -60,11 +60,11 @@ $(document).ready(()=>{
                     return "./consensi.php?seid="+d.seid;
                 })
                  .append('text')
-                 .attr('x', 87).attr('y', 60)
+                 .attr('x', 10).attr('y', 25)
                  .text("#").style("fill-opacity", 1e-6);
         nodeEnter.append('text')
                  .attr('class', 'toggleBtn')
-                 .attr('x', 108).attr('y', 62)
+                 .attr('x', 30).attr('y', 28)
                  .text(function(d){
                      if(d.children)
                         return '-';
@@ -77,7 +77,9 @@ $(document).ready(()=>{
             .attr("dy", "-0.35em")
             .attr("text-anchor", function(d) { return "start"; })
             .each(function(d) {
-                var sub_text = d.name.split(' ');
+                var cutpos = d.name.indexOf("(")<20?d.name.indexOf("("):20;
+                var sub_text = d.name.substring(0,cutpos)+"...("+d.seid+")";
+                sub_text = sub_text.split(' ');
                 var i=rows=0;
                 var temp = "";
                 while(i<sub_text.length){
@@ -146,7 +148,7 @@ $(document).ready(()=>{
             .duration(duration-50)
             .attr("d", function(d) {
                 let source = {...d.source}
-                source.y += 130;
+                source.y += 50;
                 let target = {...d.target}
                 target.y -= 120;
                 return diagonal({source: source, target: target})
@@ -179,7 +181,7 @@ $(document).ready(()=>{
 
                 d3.select("#container").html("");
                 tree = d3.layout.tree()
-                            .size([height="900", width=max_depth*550]);
+                            .size([height="900", width=max_depth*300]);
                 svg = d3.select("#container").append("svg")
                             .attr("width", width + margin.right + margin.left)
                             .attr("height", height + margin.top + margin.bottom)
@@ -251,7 +253,7 @@ $(document).ready(()=>{
     function resizeD3Tree(){
         max_depth = 1;
         getMaxRows(root);
-        tree.size([height=max_node.x+200, width=max_depth*550]);
+        tree.size([height=max_node.x+200, width=max_depth*300]);
         d3.select("#container svg")
             .attr('width',width + margin.right + margin.left)
             .attr('height', height + margin.top + margin.bottom);

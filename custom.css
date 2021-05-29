@@ -255,6 +255,9 @@ div.userscrollitbv {
   font: 0.75em sans-serif;
   fill : #00ffff;
 }
+.node a{
+  font-size : 1.5em;
+}
 .link {
   fill: none;
   stroke: #fff;
