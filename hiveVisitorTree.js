@@ -1,311 +1,242 @@
+'use strict';
 var back_list = [];
 
-var margin = {top: 80, right: 120, bottom: 80, left: 120},  width, heigh;
-var max_depth;
-var bubble_option = {
-    width : 170,
-    height : 55,
-    offset_x : -120,
-    offset_y : -20,
-    margin : 240
-}
-var i = 0, duration = 550;
-var svg, tree, root;
-var max_node, node_x;
-var diagonal = d3.svg.diagonal()
-                     .projection(function(d) { return [d.y, d.x]; });
-$(document).ready(()=>{
-    getTreeData(seid);
+var chart;
+var root, max_depth, max_usercount, children_depth = {};
+var switchmode = 0;
+d3.chart = d3.chart || {};
 
-    function update(source) {
-        // Compute the new tree layout.
-        var nodes = tree.nodes(root).reverse(),
-            links = tree.links(nodes);
-        // Normalize for fixed-depth.
-        nodes.forEach(function(d) { 
-            d.y = d.depth * bubble_option.margin+100; 
-            if(d.seid==root.seid){
-                d.x = 45;
-            }
-        });
-        max_node = {x : 0, depth : 0};
-        node_x = [];
-        reArrangeNodePosition(root);
-        // Update the nodes…
-        var node = svg.selectAll("g.node")
-            .data(nodes, function(d) { return d.id || (d.id = ++i); });
-        svg.selectAll("text.toggleBtn").text(function(d){
-            if(d.children)
-                return '-';
-            else if(d._children)
-                return '+';
-            return '';
-        });
+d3.chart.architectureTree = function() {
 
-        // Enter any new nodes at the parent's previous position.
-        var nodeEnter = node.enter().append("g")
-            .attr("class", "node")
-            .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-            .on("click", clickNode);
-
-        nodeEnter.append("rect")
-            .attr("rx", 5).attr("ry", 5)
-            .attr("x", bubble_option.offset_x).attr("y", bubble_option.offset_y)
-            .attr("width", 0).attr("height", bubble_option.height)
-            .style("fill", function(d) { return d._children ? "transparent" : "transparent"; });
-        nodeEnter.append('a')
-                .attr('xlink:href', function(d){
-                    if(d.seid==-1)
-                    return "#";
-                    return "./consensi.php?seid="+d.seid;
-                })
-                 .append('text')
-                 .attr('x', 10).attr('y', 25)
-                 .text("#").style("fill-opacity", 1e-6);
-        nodeEnter.append('text')
-                 .attr('class', 'toggleBtn')
-                 .attr('x', 30).attr('y', 28)
-                 .text(function(d){
-                     if(d.children)
-                        return '-';
-                     if(d._children)
-                        return '+';
-                     return '';
-                 }).style('fill-opacity', 1e-6).on('click', clickToggleButton)
-        nodeEnter.append("text")
-            .attr("x", function(d) { return 0; })
-            .attr("dy", "-0.35em")
-            .attr("text-anchor", function(d) { return "start"; })
-            .each(function(d) {
-                var cutpos = d.name.indexOf("(")<20?d.name.indexOf("("):20;
-                var sub_text = d.name.substring(0,cutpos)+"...("+d.seid+")";
-                sub_text = sub_text.split(' ');
-                var i=rows=0;
-                var temp = "";
-                while(i<sub_text.length){
-                    if(!sub_text[i]){ i++; continue;}
-                    if(temp.length+sub_text[i].length>40){
-                        d3.select(this).append("tspan")
-                        .text(temp)
-                        .attr("dy", (rows?1.2:0)+"em")
-                        .attr("x", bubble_option.offset_x+5)
-                        temp = sub_text[i]+(sub_text[i]=='.'?'':' ');
-                        rows++;
-                    }
-                    else
-                        temp+=sub_text[i]+(sub_text[i]=='.'?'':' ');
-                    i++;
-                }
-                if(temp){
-                    d3.select(this).append("tspan")
-                    .text(temp)
-                    .attr("dy", (rows?1.2:0)+"em")
-                    .attr("x", bubble_option.offset_x+5)
-                }
-            })
-            .style("fill-opacity", 1e-6);
-
-        // Transition nodes to their new position.
-        var nodeUpdate = node.transition()
-            .duration(duration)
-            .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
-
-        nodeUpdate.select("rect")
-            .attr("width", bubble_option.width).attr("height", bubble_option.height)
-            .style("fill", function(d) { return d._children ? "transparent" : "transparent"; });
-        nodeUpdate.selectAll("a")
-                  .style('fill-opacity', 1);
-        nodeUpdate.selectAll("text")
-            .style("fill-opacity", 1);
-
-        // Transition exiting nodes to the parent's new position.
-        var nodeExit = node.exit().transition()
-            .duration(0)
-            .attr("transform", function(d) { return "translate(" + (source.y+130) + "," + source.x + ")"; })
-            .remove();
-
-        nodeExit.select("rect")
-            .attr("width", 0);
-        nodeExit.selectAll('a')
-                .style('fill-opacity', 1e-6);
-        nodeExit.selectAll("text")
-            .style("fill-opacity", 1e-6);
-
-        // Update the links…
-        var link = svg.selectAll("path.link")
-            .data(links, function(d) { return d.target.id; });
-
-        // Enter any new links at the parent's previous position.
-        link.enter().insert("path", "g")
-            .attr("class", "link")
-            .attr("d", function(d) {
-                var o = {x: source.x0, y: source.y0+130};                
-                return diagonal({source: o, target: o});
-            });
-
-        // Transition links to their new position.
-        link.transition()
-            .duration(duration-50)
-            .attr("d", function(d) {
-                let source = {...d.source}
-                source.y += 50;
-                let target = {...d.target}
-                target.y -= 120;
-                return diagonal({source: source, target: target})
-            });
-
-        // Transition exiting nodes to the parent's new position.
-        link.exit().transition()
-            .duration(0)
-            .attr("d", function(d) {
-                var o = {x: source.x, y: source.y+130};
-                return diagonal({source: o, target: o});
-            })
-            .remove();
-
-        // Stash the old positions for transition.
-        nodes.forEach(function(d) {
-            d.x0 = d.x;
-            d.y0 = d.y;
-        });
+    var svg, tree, treeData, diameter, activeNode;
+    var svg_position={
+        x0 : screen.width/2,
+        y0 : screen.height/2
     }
-    function getTreeData(seid){
-        $.ajax({
-            url : "./hivetree_api.php"+(seid?"?seid="+seid:''),
-            type : 'post',
-            success : function(res, state) {
-                if (!state) throw state;
-                res = JSON.parse(res);
-                // adjusting the size of svg element...
-                max_depth = res.max_depth;
-
-                d3.select("#container").html("");
-                tree = d3.layout.tree()
-                            .size([height="900", width=max_depth*300]);
-                svg = d3.select("#container").append("svg")
-                            .attr("width", width + margin.right + margin.left)
-                            .attr("height", height + margin.top + margin.bottom)
-                            .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
-                            .append("g")
-                            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-                d3.select(self.frameElement).style("height", "800px");
-                // creating a d3 tree...
-                root = res.data;
-                root.x0 = 100;
-                root.y0 = 0;
-    
-    //            root.children.forEach(collapse);
-                update(root);
-                resizeD3Tree();
-            }
-        });
-    }
-    function clickNode(d){
-        if(d.seid==-1)
+    $(window).click(function(e){
+        if(!activeNode)
             return;
-        getTreeData(d.seid);
-        back_list.push(root.seid);
+        fade(1)(activeNode);
+        $(".detail-panel").hide();
+        activeNode = null;
+    });
+    // Define the zoom function for the zoomable tree
+    function zoom() {
+        d3.event.translate[0]+=svg_position.x0*d3.event.scale;
+        d3.event.translate[1]+=svg_position.y0*d3.event.scale;
+        svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
     }
-    d3.select("#backBtn").on('click',function(){
-        if(!back_list.length) return;
-        getTreeData(back_list.pop());
-    })
-    d3.select("#ExpandAllBtn").on('click', function(){
-        expand(root);
-        update(root);
-        resizeD3Tree();
-    })
-    d3.select("#CollapseAllBtn").on('click', function(){
-        if(root.children){
-            root._children = root.children;
-            root.children = null;
+    // define the zoomListener which calls the zoom function on the "zoom" event constrained within the scaleExtents
+    var zoomListener = d3.behavior.zoom().scaleExtent([0.1, 3]).on("zoom", zoom);
+    /**
+     * Build the chart
+     */
+    function chart(){
+        if (typeof(tree) === 'undefined') {
+            tree = d3.layout.tree()
+                 .separation(function(a, b) { 
+                     return (a.parent == b.parent ? 1 : 2) / (!a.depth?1:a.depth); 
+                    });
+
+            svg = d3.select("#container").append("svg")
+                .call(zoomListener)
+                .attr("width", "100%")
+                .attr("height", "100%" )
+                .attr('xmlns:xlink', "http://www.w3.org/1999/xlink")
+                .append("g")
+                .attr("transform", "translate(" + svg_position.x0 + "," + svg_position.y0 + ")");
         }
-        update(root);
-        resizeD3Tree();
-    })
-    function expand(d){
-        if(d._children){
-            d.children = d._children;
-            d._children = null;
-        }
-        if(d.children)
-            d.children.forEach(expand);
+        tree.size([360, diameter / 2]);
+
+        var nodes = tree.nodes(treeData),
+            links = tree.links(nodes);
+
+        activeNode = null;
+
+        svg.call(updateData, nodes, links);
     }
-    function collapse(d) {
-        if (d.children) {
-            d._children = d.children;
-            d._children.forEach(collapse);
-            d.children = null;
-        }
-    }
-    // Toggle children on click.
-    function clickToggleButton(d) {
-        if (d.children) {
-            collapse(d);
-        } else {
-            d.children = d._children;
-            d._children = null;
-        }
-        update(d);
-        resizeD3Tree();
-        d3.event.stopPropagation();
-    }
-    function resizeD3Tree(){
-        max_depth = 1;
-        getMaxRows(root);
-        tree.size([height=max_node.x+200, width=max_depth*300]);
-        d3.select("#container svg")
-            .attr('width',width + margin.right + margin.left)
-            .attr('height', height + margin.top + margin.bottom);
-    }
-    function getMaxRows(d){
-        if(d.children)
-            d.children.forEach(getMaxRows);
-        max_depth = max_depth>d.depth?max_depth:d.depth;
-    }
-    function reArrangeNodePosition(d){
-        if(d.children){
-            d.children.forEach(reArrangeNodePosition);
-            d.x = d.children[0].x;
-        }
-        else{
-            
-            if(d.depth<=max_node.depth && node_x[d.depth]){
-                var lastnode = node_x[d.depth].lastnode;
-                var f = 0;
-                if(lastnode.children){
-                    var cur_children = [...d.parent.children];
-                    if(lastnode.parent.seid == d.parent.seid){
-                        var index = d.parent.children.indexOf(lastnode);
-                        cur_children = cur_children.slice(index+1);
-                    }
-                    for(var i=0;i<cur_children.length;i++){
-                        var sibling = cur_children[i];
-                        if(sibling.children || lastnode.children.length-1==i){
-                            f=1;
-                            break;
-                        }
-                    }
+    /**
+     * Update the chart data
+     * @param {Object} container
+     * @param {Array}  nodes
+     */
+    var updateData = function(container, nodes, links) {
+
+        // Enrich data
+        
+        var diagonal = d3.svg.diagonal.radial()
+            .projection(function(d) { return [d.y, d.x / 180 * Math.PI]; });
+
+        var linkSelection = svg.selectAll(".link").data(links, function(d) {
+            return d.source.name + d.target.name + Math.random();
+        });
+        linkSelection.exit().remove();
+
+        linkSelection.enter().append("path")
+            .attr("class", "link")
+            .attr("d", diagonal);
+
+        var nodeSelection = container.selectAll(".node").data(nodes, function(d) {
+            return d.name + Math.random();  // always update node
+        });
+        nodeSelection.exit().remove();
+
+        var node = nodeSelection.enter().append("g")
+            .attr("class", "node")
+            .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
+            .on('mouseover', function(d) {
+                if(activeNode) return;
+                fade(0.1)(d);
+                $(".title").html(d.name);
+                var temp_userlist = d.userlist.map((one)=>{
+                    return "<div class='user'>"+one.name+"</div>";
+                });
+                if(!temp_userlist.length)
+                  temp_userlist = [];
+                $(".user-container").html("").append(temp_userlist.join(' '));
+                $(".detail-panel").show();
+            })
+            .on('mouseout', function(d) {
+                if(activeNode) {
+                    return;
                 }
-                if(f)
-                    d.x = lastnode.x + (lastnode.children.length - i)*(bubble_option.height+10);
+                fade(1)(d);
+                $(".detail-panel").hide();
+            })
+            .on('click', function(d) {
+                activeNode = d;
+                d3.event.stopPropagation();
+
+                back_list.push(root.seid);
+                seid = d.seid;
+                getNodes();
+            });
+        node.append("circle")
+            .attr("r", function(d) {
+                if(!switchmode)
+                    return d.userlist.length>0?20:5;
                 else
-                    d.x = lastnode.x + (bubble_option.height+10)
-                for(var i=d.depth-1;i>=1;i--){
-                    if(!node_x[i])
-                        continue;
-                    if(node_x[i].lastnode.x>=d.x)
-                        d.x = node_x[i].lastnode.x+(bubble_option.height+10);
-                }
-            }
-            else{
-                 max_node = { 'x' : max_node.x+bubble_option.height+10, depth : d.depth};
-                 d.x = max_node.x;
-            }
-        }
-        // console.log("current_node", d, "\nlast_node", node_x[d.depth], "\nmax_node", max_node);
-        max_node = max_node.x<d.x || (max_node.x==d.x && max_node.depth>d.depth)?{'x' : d.x, depth : d.depth}:max_node;
-        node_x[d.depth] = {'lastnode' : d};
-        // console.log("last node", node_x[d.depth]);
-    }
+                    return d.userlist.length>0?0:5;
+            })
+            .style('stroke', function(d) {
+                return d3.scale.linear()
+                    .domain([0, 1])
+                    .range(["white", "green"])(0.8);
+            })
+            .style('fill', function(d) {
+                var user_range = 5*2;
+                var color = 0xFF03E7-Math.ceil(1.0*d.userlist.length/user_range)*999;
+                if(color<0) color = -color;
+                var value = Math.ceil((d.userlist.length%user_range)/5)/2;
+                if(value==0 && d.userlist.length) value=1;
+                return d3.scale.linear().domain([0,1]).
+                        range(["white", "#"+color.toString(16)])(value);
+            });
+        node.append("image")
+            .attr('x', -15).attr('y', -15)
+            .attr('width', 30)
+            .attr('height', 30)
+            .attr("xlink:href", "./images/eye20.png")
+            .attr('transform', (d)=>{ return "rotate("+(-d.x+90)+")"; })
+            .style('display', (d)=>{
+                if(switchmode && d.userlist.length>0)
+                    return 'block';
+                return 'none';
+            })
+        node.append("text")
+            .attr("dy", ".31em")
+            .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
+            .attr("transform", function(d) { return d.x < 180 ? "translate(8)" : "rotate(180)translate(-8)"; })
+            .text(function(d) {
+                return "("+d.seid+")";
+            });
+    };
+     var fade = function(opacity) {
+        return function(node) {
+            //if (!node.dependsOn || !(node.parent && node.parent.dependsOn)) return;
+            svg.selectAll(".node")
+                .filter(function(d) {
+                    if (d.name === node.name) return false;
+                    return true;
+                })
+                .transition()
+                .style("opacity", opacity);
+        };
+    };
+    chart.data = function(value) {
+        if (!arguments.length) return treeData;
+        treeData = value;
+        return chart;
+    };
+
+    chart.diameter = function(value) {
+        if (!arguments.length) return diameter;
+        diameter = value;
+        return chart;
+    };
+
+    return chart;
+};
+
+$(document).ready(function(){
+
+    getNodes();
+    setInterval(getNodes, 30000);
+    $("#switchViewBtn").click(()=>{
+        switchmode = (switchmode+1)%2;
+        chart();
+    });
+    $("#backBtn").click(()=>{
+        if(!back_list.length)
+            return;
+        seid = back_list.pop();
+        getNodes();
+    })
 })
+
+function getNodes(){
+    $.ajax({
+        url : "./hivetree_api0.php"+(seid?"?seid="+seid:''),
+        type : 'post',
+        success : function(res, state) {
+            if (!state) throw state;
+            res = JSON.parse(res);
+            // adjusting the size of svg element...
+            max_depth = res.max_depth;
+            max_usercount = res.max_usercount;
+            // d3.select("#container").html("");
+            // tree = d3.layout.tree()
+            //             .size([height="900", width=max_depth*550]);
+            // svg = d3.select("#container").append("svg")
+            //             .attr("width", width + margin.right + margin.left)
+            //             .attr("height", height + margin.top + margin.bottom)
+            //             .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
+            //             .append("g")
+            //             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            // d3.select(self.frameElement).style("height", "800px");
+            // creating a d3 tree...
+            root = res.data;
+            root.x0 = 0;
+            root.y0 = 0;
+            children_depth = {};
+            getChildrenCountByDepth(root, 0);
+            if(!chart)
+                chart = d3.chart.architectureTree();
+            chart.data(root);
+            var diameter = max_depth*children_depth[1]*40;
+            diameter = diameter<200?200:diameter;
+            chart.diameter(diameter);
+            chart();
+//            root.children.forEach(collapse);
+            // update(root);
+            // resizeD3Tree();
+        }
+    });
+}
+function getChildrenCountByDepth(node , depth){
+    if(!children_depth[depth])
+        children_depth[depth] = 0;
+    if(node.children)
+        node.children.forEach((one)=>{ getChildrenCountByDepth(one, depth+1); })
+    children_depth[depth]++;
+}

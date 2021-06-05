@@ -19,12 +19,19 @@
 <body>
   	<div>
   		<?php include("navigation.php"); ?>
-		<div class="controlDiv">
-			<button id="backBtn" class="btn blue-btn">Back</button>
-			<button id="ExpandAllBtn" class="btn blue-btn">Expand All</button>
-			<button id="CollapseAllBtn" class="btn blue-btn">Collapse All</button>
-		</div>
  	</div>
+	<div class="controlDiv">
+		<button id="backBtn" class="btn blue-btn">Back</button>
+		<button id="switchViewBtn" class="btn blue-btn">Big Nodes/Small Nodes</button>
+	</div>
 	<div id="container">
+	</div>
+	<div class="detail-panel">
+		<div class="node-detail">
+			<div class="title"></div>
+		</div>
+		<div class="user-container">
+
+		</div>
 	</div>
 </body>

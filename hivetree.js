@@ -169,7 +169,7 @@ $(document).ready(()=>{
     }
     function getTreeData(seid){
         $.ajax({
-            url : "./hivetree_api.php"+(seid?"?seid="+seid:''),
+            url : "./hivetree_api0.php"+(seid?"?seid="+seid:''),
             type : 'post',
             success : function(res, state) {
                 if (!state) throw state;

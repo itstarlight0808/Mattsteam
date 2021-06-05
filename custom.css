@@ -227,7 +227,7 @@ div.userscrollitbv {
 .blue-btn{
   cursor : pointer;
   color : #00ffff;
-  background : transparent;
+  background : #292929;
   padding : 5px 20px;
   margin-right : 5px;
   border-radius : 5px;
@@ -241,6 +241,11 @@ div.userscrollitbv {
 .node {
     cursor: pointer;
   }
+.node circle{
+  background : #292929;
+  stroke : #00ffff;
+  stroke-width : 1px;
+}
   
 .node rect {
   /* fill: #fff; */
@@ -262,4 +267,31 @@ div.userscrollitbv {
   fill: none;
   stroke: #fff;
   stroke-width: 1.5px;
+}
+
+/**********hiveVisitorTree css ********/
+.detail-panel{
+  width : 280px;
+  border-radius : 5px;
+  background : white;
+  position : absolute;
+  top : 80px;
+  right : 50px;
+  display : none;
+}
+.node-detail{
+  background : #5ac9ff;
+  border-radius : 5px;
+  padding : 10px;
+}
+.user-container{
+  padding : 10px;
+  color : black;
+  font-size: 14px;;
+  min-height : 80px;
+  max-height : 700px;
+  overflow-y : scroll;
+}
+.user{
+  padding-top : 5px;
 }
