@@ -1,9 +1,9 @@
 'use strict';
-var back_list = [];
 
 var chart;
-var root, max_depth, max_usercount, children_depth = {};
+var root, max_depth, max_usercount, children_depth = {} , total_ch_count;
 var switchmode = 0;
+var scale = 1;
 d3.chart = d3.chart || {};
 
 d3.chart.architectureTree = function() {
@@ -22,9 +22,11 @@ d3.chart.architectureTree = function() {
     });
     // Define the zoom function for the zoomable tree
     function zoom() {
+        scale = d3.event.scale;
         d3.event.translate[0]+=svg_position.x0*d3.event.scale;
         d3.event.translate[1]+=svg_position.y0*d3.event.scale;
         svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+        chart();
     }
     // define the zoomListener which calls the zoom function on the "zoom" event constrained within the scaleExtents
     var zoomListener = d3.behavior.zoom().scaleExtent([0.1, 3]).on("zoom", zoom);
@@ -105,11 +107,8 @@ d3.chart.architectureTree = function() {
             })
             .on('click', function(d) {
                 activeNode = d;
-                d3.event.stopPropagation();
-
-                back_list.push(root.seid);
-                seid = d.seid;
-                getNodes();
+                // navigate by subnode seid
+                location.search= "seid="+d.seid;
             });
         node.append("circle")
             .attr("r", function(d) {
@@ -117,6 +116,10 @@ d3.chart.architectureTree = function() {
                     return d.userlist.length>0?20:5;
                 else
                     return d.userlist.length>0?0:5;
+            })
+            .attr('transform', ()=>{
+                if(scale<1)
+                    return "scale("+(1.0/scale)+")";
             })
             .style('stroke', function(d) {
                 return d3.scale.linear()
@@ -186,12 +189,6 @@ $(document).ready(function(){
         switchmode = (switchmode+1)%2;
         chart();
     });
-    $("#backBtn").click(()=>{
-        if(!back_list.length)
-            return;
-        seid = back_list.pop();
-        getNodes();
-    })
 })
 
 function getNodes(){
@@ -216,20 +213,21 @@ function getNodes(){
             // d3.select(self.frameElement).style("height", "800px");
             // creating a d3 tree...
             root = res.data;
-            root.x0 = 0;
-            root.y0 = 0;
             children_depth = {};
+            total_ch_count = 0;
+            var max_children={count : 1, depth : 0};
             getChildrenCountByDepth(root, 0);
+            for(var key in children_depth){
+                max_children.count = max_children.count>children_depth[key]?max_children.count:children_depth[key];
+                max_children.depth = key;
+            }
             if(!chart)
                 chart = d3.chart.architectureTree();
             chart.data(root);
-            var diameter = max_depth*children_depth[1]*40;
-            diameter = diameter<200?200:diameter;
+            var diameter = total_ch_count*40.0;
+            diameter = diameter<800?800:diameter;
             chart.diameter(diameter);
             chart();
-//            root.children.forEach(collapse);
-            // update(root);
-            // resizeD3Tree();
         }
     });
 }
@@ -238,5 +236,7 @@ function getChildrenCountByDepth(node , depth){
         children_depth[depth] = 0;
     if(node.children)
         node.children.forEach((one)=>{ getChildrenCountByDepth(one, depth+1); })
+    else
+        total_ch_count++;
     children_depth[depth]++;
 }

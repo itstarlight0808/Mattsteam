@@ -21,7 +21,6 @@
   		<?php include("navigation.php"); ?>
  	</div>
 	<div class="controlDiv">
-		<button id="backBtn" class="btn blue-btn">Back</button>
 		<button id="switchViewBtn" class="btn blue-btn">Big Nodes/Small Nodes</button>
 	</div>
 	<div id="container">
