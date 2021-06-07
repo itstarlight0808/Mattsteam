@@ -107,7 +107,8 @@ d3.chart.architectureTree = function() {
             })
             .on('click', function(d) {
                 activeNode = d;
-                // navigate by subnode seid
+                d3.event.stopPropagation();
+
                 location.search= "seid="+d.seid;
             });
         node.append("circle")
