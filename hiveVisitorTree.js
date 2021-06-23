@@ -135,7 +135,16 @@ d3.chart.architectureTree = function() {
                 if(value==0 && d.userlist.length) value=1;
                 return d3.scale.linear().domain([0,1]).
                         range(["white", "#"+color.toString(16)])(value);
-            });
+            })
+        node.append('text')
+            .attr('y', 10)
+            .attr('text-anchor', 'middle')
+            .text(function(d){
+                return d.userlist.length>0?d.userlist.length:"";
+            })
+            .attr('transform', (d)=>("rotate(-"+(d.x-90)+")"))
+            .style('fill', 'black')
+            .style('font-size', "1.5em");
         node.append("image")
             .attr('x', -15).attr('y', -15)
             .attr('width', 30)
@@ -150,7 +159,7 @@ d3.chart.architectureTree = function() {
         node.append("text")
             .attr("dy", ".31em")
             .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
-            .attr("transform", function(d) { return d.x < 180 ? "translate(8)" : "rotate(180)translate(-8)"; })
+            .attr("transform", function(d) { return d.x < 180 ? "translate(18)" : "rotate(180)translate(-18)"; })
             .text(function(d) {
                 return "("+d.seid+")";
             });
