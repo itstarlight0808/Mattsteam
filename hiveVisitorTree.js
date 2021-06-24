@@ -142,7 +142,12 @@ d3.chart.architectureTree = function() {
             .text(function(d){
                 return d.userlist.length>0?d.userlist.length:"";
             })
-            .attr('transform', (d)=>("rotate("+(-(d.x-90))+")"))
+            .attr('transform', (d)=>{
+                var str = "rotate("+(-(d.x-90))+")";
+                if(scale<1)
+                    str+="scale("+(1.0/scale)+")";
+                return str;
+            })
             .style('fill', 'black')
             .style('font-size', "1.5em");
         node.append("image")
